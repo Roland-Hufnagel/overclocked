@@ -1,19 +1,19 @@
 export default async function handler(request, response) {
   if (request.method === "GET") {
     console.log("im GET request");
-    const data = await getClockifyData();
+    const data = await getMonthEntries();
 
-    console.log(parseDuration(time));
     response.json(data);
   } else {
     response.json({ message: "Something went wrong" });
   }
 }
 
-async function getClockifyData() {
+async function getMonthEntries() {
   const { API_KEY } = process.env;
   const userId = "6401f50f6f72072d66fdfcfd";
   const workspaceId = "6401f50f6f72072d66fdfcfe";
+
   const response = await fetch(
     `https://api.clockify.me/api/v1/workspaces/${workspaceId}/user/${userId}/time-entries?start=2023-07-01T00:00:00Z`,
     {
@@ -22,10 +22,21 @@ async function getClockifyData() {
       },
     }
   );
+
   const data = await response.json();
-  return data;
+
+  const timeEntries = data.map((entry) => {
+    return {
+      id: entry.id,
+      duration: parseDuration(entry.timeInterval.duration),
+      start: entry.timeInterval.start,
+      end: entry.timeInterval.end,
+    };
+  });
+
+  return timeEntries;
 }
-const time = "PT10H3M";
+
 function parseDuration(time) {
   const hIndex = time.indexOf("H");
   const mIndex = time.indexOf("M");
