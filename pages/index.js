@@ -19,5 +19,5 @@ export default function Home() {
   }
   console.log(data);
 
-  return <>{data.message}</>;
+  return <pre>{JSON.stringify(data, null, 2)}</pre>;
 }

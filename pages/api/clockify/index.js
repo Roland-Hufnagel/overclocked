@@ -3,8 +3,33 @@ export default async function handler(request, response) {
     console.log("im GET request");
     const data = await getClockifyData();
 
-    console.log(parseDuration(time));
-    response.json(data);
+    const timeEntries = data
+      .map(({ id, timeInterval: { start, end } }) => ({
+        id,
+        start,
+        end,
+        duration: cleverParseDuration(start, end),
+      }))
+      .reduce((acc, entry) => {
+        const date = new Date(entry.start);
+
+        const currentDateEntry = acc.find((entry) => entry.date === date);
+
+        if (currentDateEntry) {
+          currentDateEntry.duration += entry.duration;
+        } else {
+          acc.push({
+            id: entry.id,
+            date: date.toLocaleDateString(),
+            week: getWeekNumber(date),
+            duration: entry.duration,
+          });
+        }
+
+        return acc;
+      }, []);
+
+    response.json(timeEntries);
   } else {
     response.json({ message: "Something went wrong" });
   }
@@ -12,8 +37,17 @@ export default async function handler(request, response) {
 
 async function getClockifyData() {
   const { API_KEY } = process.env;
-  const userId = "6401f50f6f72072d66fdfcfd";
-  const workspaceId = "6401f50f6f72072d66fdfcfe";
+  const userUrl = "https://api.clockify.me/api/v1/user";
+
+  const userResponse = await fetch(userUrl, {
+    headers: {
+      "x-api-key": API_KEY,
+    },
+  });
+
+  const { id: userId, activeWorkspace: workspaceId } =
+    await userResponse.json();
+
   const response = await fetch(
     `https://api.clockify.me/api/v1/workspaces/${workspaceId}/user/${userId}/time-entries?start=2023-07-01T00:00:00Z`,
     {
@@ -25,14 +59,40 @@ async function getClockifyData() {
   const data = await response.json();
   return data;
 }
-const time = "PT10H3M";
+
 function parseDuration(time) {
   const hIndex = time.indexOf("H");
   const mIndex = time.indexOf("M");
 
-  const hours = Number(time.slice(2, hIndex));
-  const minutes = Number(time.slice(hIndex + 1, mIndex));
+  if (hIndex >= 0 && mIndex >= 0) {
+    const hours = Number(time.slice(2, hIndex));
+    const minutes = Number(time.slice(hIndex + 1, mIndex));
+    return minutes + hours * 60;
+  }
 
-  const result = minutes + hours * 60;
-  return result;
+  if (hIndex >= 0) {
+    const hours = Number(time.slice(2, hIndex));
+    return hours * 60;
+  }
+
+  if (mIndex >= 0) {
+    const minutes = Number(time.slice(2, mIndex));
+    return minutes;
+  }
+
+  return 0;
+}
+
+function cleverParseDuration(start, end) {
+  const time1 = new Date(start);
+  const time2 = end ? new Date(end) : new Date();
+
+  return Math.floor((time2 - time1) / (60 * 1000));
+}
+
+function getWeekNumber(currentDate) {
+  const startDate = new Date(currentDate.getFullYear(), 0, 1);
+  const days = Math.floor((currentDate - startDate) / (24 * 60 * 60 * 1000));
+
+  return Math.ceil(days / 7);
 }
