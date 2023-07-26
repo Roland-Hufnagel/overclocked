@@ -25,14 +25,16 @@ async function getMonthEntries() {
 
   const data = await response.json();
 
-  const timeEntries = data.map((entry) => {
-    return {
-      id: entry.id,
-      duration: parseDuration(entry.timeInterval.duration),
-      start: entry.timeInterval.start,
-      end: entry.timeInterval.end,
-    };
-  });
+  const timeEntries = data
+    .filter((entry) => entry.timeInterval.duration)
+    .map((entry) => {
+      return {
+        id: entry.id,
+        duration: parseDuration(entry.timeInterval.duration),
+        start: entry.timeInterval.start,
+        end: entry.timeInterval.end,
+      };
+    });
 
   return timeEntries;
 }
