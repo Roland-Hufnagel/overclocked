@@ -48,8 +48,16 @@ async function getClockifyData() {
   const { id: userId, activeWorkspace: workspaceId } =
     await userResponse.json();
 
+  const date = new Date();
+
+  const currentMonth = (date.getMonth() + 1).toString().padStart(2, "0");
+  const currentYear = date.getFullYear();
+  console.log(currentYear);
+
+  console.log(currentMonth);
+
   const response = await fetch(
-    `https://api.clockify.me/api/v1/workspaces/${workspaceId}/user/${userId}/time-entries?start=2023-07-01T00:00:00Z`,
+    `https://api.clockify.me/api/v1/workspaces/${workspaceId}/user/${userId}/time-entries?start=${currentYear}-${currentMonth}-01T00:00:00Z`,
     {
       headers: {
         "x-api-key": API_KEY,
