@@ -8,20 +8,23 @@ export default async function handler(request, response) {
         id,
         start,
         end,
+        day: new Date(start).getDate(),
         duration: cleverParseDuration(start, end),
       }))
       .reduce((acc, entry) => {
         const date = new Date(entry.start);
+        const day = new Date(entry.start).getDate();
+        const currentDayEntry = acc.find((entry) => entry.day === day);
 
-        const currentDateEntry = acc.find((entry) => entry.date === date);
-
-        if (currentDateEntry) {
-          currentDateEntry.duration += entry.duration;
+        if (currentDayEntry) {
+          currentDayEntry.duration += entry.duration;
         } else {
           acc.push({
             id: entry.id,
             date: date.toLocaleDateString(),
             week: getWeekNumber(date),
+            day: day,
+            weekDay: date.getDay(),
             duration: entry.duration,
           });
         }
@@ -48,7 +51,7 @@ async function getClockifyData() {
   const { id: userId, activeWorkspace: workspaceId } =
     await userResponse.json();
 
-  const date = new Date();
+  const date = new Date("2023/07/06");
 
   const currentMonth = (date.getMonth() + 1).toString().padStart(2, "0");
   const currentYear = date.getFullYear();
