@@ -31,10 +31,10 @@ export default async function handler(request, response) {
 
         return acc;
       }, []);
-
-    response.json(timeEntries);
+    console.log("API timeEntries:", timeEntries);
+    return response.json(timeEntries);
   } else {
-    response.json({ message: "Something went wrong" });
+    return response.json({ message: "Something went wrong" });
   }
 }
 
@@ -106,4 +106,13 @@ function getWeekNumber(currentDate) {
   const days = Math.floor((currentDate - startDate) / (24 * 60 * 60 * 1000));
 
   return Math.ceil(days / 7);
+}
+function parseTimeEntries(timeEntries) {
+  const result = {};
+  const month = new Date(timeEntries[0].date).getMonth();
+  let monthDuration = 0;
+
+  for (const element of timeEntries) {
+    monthDuration += element.duration;
+  }
 }
