@@ -1,8 +1,8 @@
 export default async function handler(request, response) {
   if (request.method === "GET") {
     console.log("im GET request");
-    const data = await getClockifyData();
-
+    const data = await getClockifyData(request.query.start, request.query.end);
+    console.log("Query: ", request.query);
     const timeEntries = data
       .map(({ id, timeInterval: { start, end } }) => ({
         id,
@@ -13,7 +13,9 @@ export default async function handler(request, response) {
       .reduce((acc, entry) => {
         const date = new Date(entry.start);
 
-        const currentDateEntry = acc.find((entry) => entry.date === date);
+        const currentDateEntry = acc.find(
+          (entry) => entry.date === date.toLocaleDateString()
+        );
 
         if (currentDateEntry) {
           currentDateEntry.duration += entry.duration;
@@ -30,12 +32,12 @@ export default async function handler(request, response) {
       }, []);
 
     response.json(timeEntries);
-  } else {
-    response.json({ message: "Something went wrong" });
+    return;
   }
+  response.json({ message: "Something went wrong" });
 }
 
-async function getClockifyData() {
+async function getClockifyData(start, end) {
   const { API_KEY } = process.env;
   const userUrl = "https://api.clockify.me/api/v1/user";
 
@@ -48,7 +50,7 @@ async function getClockifyData() {
   const { id: userId, activeWorkspace: workspaceId } =
     await userResponse.json();
 
-  const date = new Date();
+  const date = new Date("2023/07/06");
 
   const currentMonth = (date.getMonth() + 1).toString().padStart(2, "0");
   const currentYear = date.getFullYear();
@@ -57,7 +59,7 @@ async function getClockifyData() {
   console.log(currentMonth);
 
   const response = await fetch(
-    `https://api.clockify.me/api/v1/workspaces/${workspaceId}/user/${userId}/time-entries?start=${currentYear}-${currentMonth}-01T00:00:00Z`,
+    `https://api.clockify.me/api/v1/workspaces/${workspaceId}/user/${userId}/time-entries?page-size=0&start=${start}&end=${end}`,
     {
       headers: {
         "x-api-key": API_KEY,
@@ -65,6 +67,7 @@ async function getClockifyData() {
     }
   );
   const data = await response.json();
+  console.log(data);
   return data;
 }
 
