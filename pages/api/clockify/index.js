@@ -2,36 +2,44 @@ export default async function handler(request, response) {
   if (request.method === "GET") {
     console.log("im GET request");
     const data = await getClockifyData();
+    // const timeEntries = data
+    //   .map(({ id, timeInterval: { start, end } }) => ({
+    //     id,
+    //     start,
+    //     end,
+    //     day: new Date(start).getDate(),
+    //     duration: cleverParseDuration(start, end),
+    //   }))
+    //   .reduce((acc, entry) => {
+    //     const date = new Date(entry.start);
+    //     const day = new Date(entry.start).getDate();
+    //     const currentDayEntry = acc.find((entry) => entry.day === day);
 
-    const timeEntries = data
-      .map(({ id, timeInterval: { start, end } }) => ({
-        id,
-        start,
-        end,
-        day: new Date(start).getDate(),
-        duration: cleverParseDuration(start, end),
-      }))
-      .reduce((acc, entry) => {
-        const date = new Date(entry.start);
-        const day = new Date(entry.start).getDate();
-        const currentDayEntry = acc.find((entry) => entry.day === day);
+    //     if (currentDayEntry) {
+    //       currentDayEntry.duration += entry.duration;
+    //     } else {
+    //       acc.push({
+    //         id: entry.id,
+    //         date: date.toLocaleDateString(),
+    //         week: getWeekNumber(date),
+    //         day: day,
+    //         weekDay: date.getDay(),
+    //         duration: entry.duration,
+    //       });
+    //     }
 
-        if (currentDayEntry) {
-          currentDayEntry.duration += entry.duration;
-        } else {
-          acc.push({
-            id: entry.id,
-            date: date.toLocaleDateString(),
-            week: getWeekNumber(date),
-            day: day,
-            weekDay: date.getDay(),
-            duration: entry.duration,
-          });
-        }
-
-        return acc;
-      }, []);
-    console.log("API timeEntries:", timeEntries);
+    //     return acc;
+    //   }, []);
+    // console.log("API timeEntries:", timeEntries);
+    const timeEntries = data.map(({ id, timeInterval: { start, end } }) => ({
+      id,
+      start,
+      end: end || new Date(),
+      day: new Date(start).getDate(),
+      week: getWeekNumber(new Date(start)),
+      duration: cleverParseDuration(start, end),
+    }));
+    console.log(timeEntries);
     return response.json(timeEntries);
   } else {
     return response.json({ message: "Something went wrong" });
@@ -52,6 +60,7 @@ async function getClockifyData() {
     await userResponse.json();
 
   const date = new Date("2023/07/06");
+  //const date = new Date();
 
   const currentMonth = (date.getMonth() + 1).toString().padStart(2, "0");
   const currentYear = date.getFullYear();
@@ -71,28 +80,28 @@ async function getClockifyData() {
   return data;
 }
 
-function parseDuration(time) {
-  const hIndex = time.indexOf("H");
-  const mIndex = time.indexOf("M");
+// function parseDuration(time) {
+//   const hIndex = time.indexOf("H");
+//   const mIndex = time.indexOf("M");
 
-  if (hIndex >= 0 && mIndex >= 0) {
-    const hours = Number(time.slice(2, hIndex));
-    const minutes = Number(time.slice(hIndex + 1, mIndex));
-    return minutes + hours * 60;
-  }
+//   if (hIndex >= 0 && mIndex >= 0) {
+//     const hours = Number(time.slice(2, hIndex));
+//     const minutes = Number(time.slice(hIndex + 1, mIndex));
+//     return minutes + hours * 60;
+//   }
 
-  if (hIndex >= 0) {
-    const hours = Number(time.slice(2, hIndex));
-    return hours * 60;
-  }
+//   if (hIndex >= 0) {
+//     const hours = Number(time.slice(2, hIndex));
+//     return hours * 60;
+//   }
 
-  if (mIndex >= 0) {
-    const minutes = Number(time.slice(2, mIndex));
-    return minutes;
-  }
+//   if (mIndex >= 0) {
+//     const minutes = Number(time.slice(2, mIndex));
+//     return minutes;
+//   }
 
-  return 0;
-}
+//   return 0;
+// }
 
 function cleverParseDuration(start, end) {
   const time1 = new Date(start);
