@@ -1,8 +1,6 @@
 export default async function handler(request, response) {
   if (request.method === "GET") {
-    console.log("im GET request");
     const data = await getClockifyData(request.query.start, request.query.end);
-    console.log("Query: ", request.query);
     const timeEntries = data
       .map(({ id, timeInterval: { start, end } }) => ({
         id,
@@ -22,8 +20,11 @@ export default async function handler(request, response) {
         } else {
           acc.push({
             id: entry.id,
-            date: date.toLocaleDateString(),
+            day: date.getDate(),
             week: getWeekNumber(date),
+            month: date.getMonth(),
+            year: date.getFullYear(),
+            date: date.toLocaleDateString(),
             duration: entry.duration,
           });
         }
@@ -50,14 +51,6 @@ async function getClockifyData(start, end) {
   const { id: userId, activeWorkspace: workspaceId } =
     await userResponse.json();
 
-  const date = new Date("2023/07/06");
-
-  const currentMonth = (date.getMonth() + 1).toString().padStart(2, "0");
-  const currentYear = date.getFullYear();
-  console.log(currentYear);
-
-  console.log(currentMonth);
-
   const response = await fetch(
     `https://api.clockify.me/api/v1/workspaces/${workspaceId}/user/${userId}/time-entries?page-size=0&start=${start}&end=${end}`,
     {
@@ -67,43 +60,19 @@ async function getClockifyData(start, end) {
     }
   );
   const data = await response.json();
-  console.log(data);
   return data;
 }
 
-function parseDuration(time) {
-  const hIndex = time.indexOf("H");
-  const mIndex = time.indexOf("M");
 
-  if (hIndex >= 0 && mIndex >= 0) {
-    const hours = Number(time.slice(2, hIndex));
-    const minutes = Number(time.slice(hIndex + 1, mIndex));
-    return minutes + hours * 60;
-  }
-
-  if (hIndex >= 0) {
-    const hours = Number(time.slice(2, hIndex));
-    return hours * 60;
-  }
-
-  if (mIndex >= 0) {
-    const minutes = Number(time.slice(2, mIndex));
-    return minutes;
-  }
-
-  return 0;
-}
 
 function cleverParseDuration(start, end) {
   const time1 = new Date(start);
   const time2 = end ? new Date(end) : new Date();
-
   return Math.floor((time2 - time1) / (60 * 1000));
 }
 
 function getWeekNumber(currentDate) {
   const startDate = new Date(currentDate.getFullYear(), 0, 1);
   const days = Math.floor((currentDate - startDate) / (24 * 60 * 60 * 1000));
-
   return Math.ceil(days / 7);
 }
