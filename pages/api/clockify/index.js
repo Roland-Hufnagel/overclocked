@@ -22,6 +22,7 @@ export default async function handler(request, response) {
             id: entry.id,
             day: date.getDate(),
             week: getWeekNumber(date),
+            weekday: date.getDay(),
             month: date.getMonth(),
             year: date.getFullYear(),
             date: date.toLocaleDateString(),
@@ -62,8 +63,6 @@ async function getClockifyData(start, end) {
   const data = await response.json();
   return data;
 }
-
-
 
 function cleverParseDuration(start, end) {
   const time1 = new Date(start);
