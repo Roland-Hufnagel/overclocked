@@ -1,3 +1,4 @@
+import WorkhoursBar from "@/components/WorkhoursBar";
 import useSWR from "swr";
 
 const start = new Date("2022/03/01").toISOString();
@@ -17,5 +18,11 @@ export default function Home() {
     return <h1>Error</h1>;
   }
 
-  return <pre>{JSON.stringify(data, null, 2)}</pre>;
+  return (
+    <>
+      <WorkhoursBar current={120} />
+      <WorkhoursBar current={180} />
+      <pre>{JSON.stringify(data, null, 2)}</pre>;
+    </>
+  );
 }
