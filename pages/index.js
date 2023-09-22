@@ -1,4 +1,4 @@
-import WorkhoursBar from "@/components/WorkhoursBar";
+import ProgressBar from "@/components/ProgressBar";
 import { useState } from "react";
 import useSWR from "swr";
 
@@ -26,13 +26,13 @@ export default function Home() {
 
   return (
     <>
-      <WorkhoursBar
+      <ProgressBar
         current={120}
         goal={exampleGoal}
         dynamic
         onChange={setExampleGoal}
       />
-      <WorkhoursBar current={40} />
+      <ProgressBar current={40} />
       <pre>{JSON.stringify(data, null, 2)}</pre>;
     </>
   );

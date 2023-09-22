@@ -5,7 +5,7 @@ const VARIANTS = {
   POS: "POSITIVE",
 };
 
-export default function WorkhoursBar({
+export default function ProgressBar({
   dynamic = false,
   goal = 160,
   max = 200,
