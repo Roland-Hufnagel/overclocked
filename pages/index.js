@@ -1,4 +1,5 @@
 import WorkhoursBar from "@/components/WorkhoursBar";
+import { useState } from "react";
 import useSWR from "swr";
 
 const start = new Date("2022/03/01").toISOString();
@@ -10,6 +11,11 @@ const fetcher = (url) => fetch(url).then((response) => response.json());
 
 export default function Home() {
   const { data, isLoading } = useSWR(url, fetcher);
+  const [exampleGoal, setExampleGoal] = useState(160);
+
+  function handleGoalChange(newGoal) {
+    setExampleGoal(newGoal);
+  }
 
   if (isLoading) {
     return <h1>is Loading...</h1>;
@@ -20,9 +26,13 @@ export default function Home() {
 
   return (
     <>
-      <WorkhoursBar current={120} />
-      <WorkhoursBar current={180} />
-      <WorkhoursBar current={200} goal={80} />
+      <WorkhoursBar
+        current={120}
+        goal={exampleGoal}
+        dynamic
+        onChange={setExampleGoal}
+      />
+      <WorkhoursBar current={40} />
       <pre>{JSON.stringify(data, null, 2)}</pre>;
     </>
   );

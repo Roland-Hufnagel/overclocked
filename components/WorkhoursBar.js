@@ -5,7 +5,13 @@ const VARIANTS = {
   POS: "POSITIVE",
 };
 
-export default function WorkhoursBar({ goal = 160, max = 200, current }) {
+export default function WorkhoursBar({
+  dynamic = false,
+  goal = 160,
+  max = 200,
+  current,
+  onChange,
+}) {
   const isOvertime = current >= goal;
 
   const toRelative = (value) => Math.round((value / max) * 100);
@@ -19,17 +25,26 @@ export default function WorkhoursBar({ goal = 160, max = 200, current }) {
       {!isOvertime && <Bar variant={VARIANTS.NEG} />}
       <GoalMark />
       {isOvertime && <Bar variant={VARIANTS.POS} />}
+      {dynamic && (
+        <Controls
+          type="range"
+          value={goal}
+          max={max}
+          onChange={(event) => onChange(event.target.value)}
+        />
+      )}
     </Container>
   );
 }
 
 const Container = styled.div`
-  border: solid 1px var(--c-on-surface);
-  border-radius: 16px;
+  position: relative;
   display: grid;
   gap: 4px;
   height: 64px;
   padding: 4px;
+  border: solid 1px var(--c-on-surface);
+  border-radius: 16px;
 
   grid-template-columns: ${({ isOvertime, current, goal }) =>
     isOvertime
@@ -65,4 +80,37 @@ const GoalMark = styled.div`
   background-color: var(--c-on-surface);
   width: 3px;
   border-radius: 999px;
+`;
+
+const Controls = styled.input`
+  position: absolute;
+  width: calc(100% + 20px);
+  margin-inline: 0px;
+  height: 100%;
+
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+
+  -webkit-appearance: none;
+
+  &:focus {
+    outline: none;
+  }
+
+  &::-webkit-slider-thumb {
+    background-color: transparent;
+    width: 48px;
+    height: 100%;
+    border: none;
+    cursor: pointer;
+  }
+
+  &::-moz-range-thumb {
+    background-color: transparent;
+    width: 48px;
+    height: 100%;
+    border: none;
+    cursor: pointer;
+  }
 `;
