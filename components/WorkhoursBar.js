@@ -5,42 +5,47 @@ const VARIANTS = {
   POS: "POSITIVE",
 };
 
-export default function WorkhoursBar({
-  goal = 160,
-  max = goal * 1.25,
-  current,
-}) {
-  const isOvertime = current > goal;
+export default function WorkhoursBar({ goal = 160, max = 200, current }) {
+  const isOvertime = current >= goal;
 
   const toRelative = (value) => Math.round((value / max) * 100);
-
   return (
-    <Container>
-      <Bar value={toRelative(Math.min(current, goal))} />
-      {!isOvertime && (
-        <Bar variant={VARIANTS.NEG} value={toRelative(goal - current)} />
-      )}
-      <GoalMark value={toRelative(goal)} />
-      {isOvertime && (
-        <Bar variant={VARIANTS.POS} value={toRelative(current - goal)} />
-      )}
+    <Container
+      isOvertime={isOvertime}
+      current={toRelative(current)}
+      goal={toRelative(goal)}
+    >
+      <Bar />
+      {!isOvertime && <Bar variant={VARIANTS.NEG} />}
+      <GoalMark />
+      {isOvertime && <Bar variant={VARIANTS.POS} />}
     </Container>
   );
 }
 
 const Container = styled.div`
-  position: relative;
   border: solid 1px var(--c-on-surface);
   border-radius: 16px;
-  display: flex;
-  padding: 4px;
-  height: 64px;
+  display: grid;
   gap: 4px;
+  height: 64px;
+  padding: 4px;
+
+  grid-template-columns: ${({ isOvertime, current, goal }) =>
+    isOvertime
+      ? css`
+          calc(${goal}% + 4px) 3px ${Math.min(
+          current - goal,
+          100 - goal - 3
+        )}% 1fr;
+        `
+      : css`
+          ${current}% ${Math.abs(goal - current)}%3px 1fr;
+        `};
 `;
 
 const Bar = styled.div`
   background-color: var(--c-neutral);
-  width: ${({ value }) => `${value}%`};
   border-radius: 12px;
 
   ${({ variant }) =>
@@ -60,6 +65,4 @@ const GoalMark = styled.div`
   background-color: var(--c-on-surface);
   width: 3px;
   border-radius: 999px;
-  top: 0;
-  left: ${({ value }) => `${value}%`};
 `;

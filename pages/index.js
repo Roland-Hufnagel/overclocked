@@ -22,6 +22,7 @@ export default function Home() {
     <>
       <WorkhoursBar current={120} />
       <WorkhoursBar current={180} />
+      <WorkhoursBar current={200} goal={80} />
       <pre>{JSON.stringify(data, null, 2)}</pre>;
     </>
   );
