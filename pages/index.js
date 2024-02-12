@@ -1,5 +1,4 @@
 import useSWR from "swr";
-console.log("test")
 const start = new Date("2022/03/01").toISOString();
 const end = new Date("2023/08/01").toISOString();
 
